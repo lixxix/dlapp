@@ -2,6 +2,7 @@
 [下载程序](https://s.lixxix.com/api/v1/packages/download/下载助手_0.1.0_x64_zh-CN.msi)
 
 一个功能强大、轻量级的下载管理工具，支持多种下载方式。
+![screenshot](./public/gif.gif)
 
 ## 功能特性
 
