@@ -9,6 +9,7 @@ use crate::aria2c::{
     restart_download, resume_download, tell_status, tell_torrent_info, test_aria2c_connection,
     test_aria2c_connection_detailed,
 };
+
 use crate::aria2c::{get_aria2c_info, start_aria2c, stop_aria2c, Aria2cState};
 use crate::config::commands::{ get_download_settings, update_download_settings};
 use crate::config::settings::DownloadSettings;
@@ -151,19 +152,9 @@ pub fn run() {
             update_download_settings,
             // 主动命令
             tell_torrent_info,
+
         ])
-        .on_window_event(|app, event| match event {
-            tauri::WindowEvent::Destroyed => {
-                if app.label() == "main" {
-                    let app_handle = app.app_handle().clone();
-                    tauri::async_runtime::spawn(async move {
-                        let state = app_handle.state::<Aria2cState>();
-                        if let Err(e) = state.inner().stop_aria2c().await {
-                            eprintln!("Failed to stop aria2c: {}", e);
-                        }
-                    });
-                }
-            }
+        .on_window_event( move |app, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 if app.label() == "main" {
                     app.hide().unwrap();
@@ -242,11 +233,27 @@ pub fn run() {
                 })
                 .on_menu_event(|app, event| match event.id.as_ref() {
                     "quit" => {
+                        println!("Quit menu item clicked, stopping aria2c...");
+        
+                        // 先停止 aria2c
+                        let app_handle = app.app_handle().clone();
+                        tauri::async_runtime::block_on(async move {
+                            let state = app_handle.state::<Aria2cState>();
+                            if let Err(e) = state.inner().stop_aria2c().await {
+                                eprintln!("Failed to stop aria2c: {}", e);
+                            } else {
+                                println!("aria2c stopped successfully");
+                            }
+                        });
                         
-                     
+                        // 等待一小段时间确保 aria2c 完全停止
+                        thread::sleep(std::time::Duration::from_millis(500));
+                        // 关闭所有窗口
                         for (_, window) in app.windows().iter() {
-                               let _ = window.close();
-                           }
+                            let _ = window.close();
+                        }
+                        
+                        // 退出应用
                         app.exit(0);
                     }
                     "show_window" => {
