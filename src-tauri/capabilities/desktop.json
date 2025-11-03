@@ -1,0 +1,82 @@
+{
+  "identifier": "desktop-capability",
+  "platforms": [
+    "macOS",
+    "windows",
+    "linux"
+  ],
+  "windows": [
+    "main",
+    "setting",
+    "dialog-*"
+  ],
+  "permissions": [
+    "autostart:default",
+    "notification:default",
+    "core:window:allow-create",
+    "core:webview:allow-create-webview",
+    "core:window:allow-set-title",
+    "core:window:allow-show",
+    "core:webview:allow-create-webview-window",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-close",
+    "core:window:allow-unmaximize",
+    "core:window:allow-start-dragging",
+    "dialog:default",
+    "dialog:allow-open",
+    "opener:allow-open-path",
+    "store:default",
+    "store:allow-get",
+    "store:allow-set",
+    "store:allow-save",
+    "store:allow-load",
+    "store:allow-delete",
+     "fs:default",
+     
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [{ "path": "**" }]
+    },
+     {
+      "identifier": "fs:allow-remove",
+      "allow": [{ "path": "**" }]
+    },
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://127.0.0.1:8081"
+        }
+      ],
+      "deny": [
+        {
+          "url": "https://private.tauri.app"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-write-file",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "aria2c",
+          "cmd": "",
+          "args": true,
+          "sidecar": true
+        }
+      ]
+    },
+    "process:default",
+    "process:allow-restart",
+    "updater:default"
+  ]
+}
