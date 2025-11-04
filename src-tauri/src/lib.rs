@@ -179,9 +179,6 @@ pub fn run() {
                     eprintln!("Failed to start aria2c on startup: {}", e);
                 }
 
-                // 等待一段时间确保aria2c已启动
-                tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-
                 // 获取全局设置并发送到aria2c
                 if let Ok(settings) = settings_state_clone.lock() {
                     let global_config = settings.get_global_aria2c_config();

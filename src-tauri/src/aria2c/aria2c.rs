@@ -140,7 +140,7 @@ impl Aria2cState {
                 .await;
 
             // 等待一段时间让aria2c保存会话
-            tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
             // 杀死进程
             if let Err(e) = child.kill() {

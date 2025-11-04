@@ -15,12 +15,12 @@ import {
   Play,
   Plus,
 } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import DownloadTaskItem from "./DownloadTaskItem";
 
 const DownloadManager: React.FC = () => {
-  const { isConnected, loadDownloads ,checkConnection} = useDownloadManager();
+  const { isConnected, loadDownloads, checkConnection } = useDownloadManager();
 
   const tasks = useTasks();
 
@@ -134,70 +134,61 @@ const DownloadManager: React.FC = () => {
     }
   };
 
-  const handlePauseDownload = useCallback(
-    async (gid: string) => {
-      try {
-        // 立即更新期望状态
-        // expectedStates.current[gid] = "paused";
-        console.log("pause", gid);
-        // 更新UI显示期望状态
-        let result = await invoke("pause_download", { gid });
-        if (result == gid) {
-          tasks.setTargetStatus(gid, "paused");
-        }
-      } catch (error) {
-        console.error("Failed to pause download:", error);
-        // 如果命令执行失败，移除期望状态
+  const handlePauseDownload = async (gid: string) => {
+    try {
+      // 立即更新期望状态
+      // expectedStates.current[gid] = "paused";
+      console.log("pause", gid);
+      // 更新UI显示期望状态
+      let result = await invoke("pause_download", { gid });
+      if (result == gid) {
+        tasks.setTargetStatus(gid, "paused");
       }
+    } catch (error) {
+      console.error("Failed to pause download:", error);
+      // 如果命令执行失败，移除期望状态
+    }
+    loadDownloads();
+  };
+
+  const handleResumeDownload = async (gid: string) => {
+    try {
+      // 立即更新期望状态
+
+      console.log("resume", gid);
+
+      // 发送恢复命令到 aria2c
+      let result = await invoke("resume_download", { gid });
+      if (result == gid) {
+        // 如果命令执行失败，移除期望状态
+
+        // 重新加载状态以恢复实际状态
+        tasks.setTargetStatus(gid, "active");
+        loadDownloads();
+      }
+    } catch (error) {
+      console.error("Failed to resume download:", error);
+      // 如果命令执行失败，移除期望状态
+
+      // 重新加载状态以恢复实际状态
       loadDownloads();
-    },
-    [tasks]
-  );
+    }
+  };
 
-  const handleResumeDownload = useCallback(
-    async (gid: string) => {
-      try {
-        // 立即更新期望状态
+  const handleRemoveDownload = async (gid: string) => {
+    try {
+      // 立即更新期望状态
 
-        console.log("resume", gid);
+      await invoke("remove_download", { gid });
+      loadDownloads();
+    } catch (error) {
+      console.error("Failed to remove download:", error);
+      // 如果命令执行失败，移除期望状态
 
-        // 发送恢复命令到 aria2c
-        let result = await invoke("resume_download", { gid });
-        if (result == gid) {
-          // 如果命令执行失败，移除期望状态
-
-          // 重新加载状态以恢复实际状态
-          tasks.setTargetStatus(gid, "active");
-          loadDownloads();
-        }
-      } catch (error) {
-        console.error("Failed to resume download:", error);
-        // 如果命令执行失败，移除期望状态
-
-        // 重新加载状态以恢复实际状态
-        loadDownloads();
-      }
-    },
-    [tasks]
-  );
-
-  const handleRemoveDownload = useCallback(
-    async (gid: string) => {
-      try {
-        // 立即更新期望状态
-
-        await invoke("remove_download", { gid });
-        loadDownloads();
-      } catch (error) {
-        console.error("Failed to remove download:", error);
-        // 如果命令执行失败，移除期望状态
-
-        // 重新加载状态以恢复实际状态
-        loadDownloads();
-      }
-    },
-    [tasks]
-  );
+      // 重新加载状态以恢复实际状态
+      loadDownloads();
+    }
+  };
 
   // 添加全部开始功能
   const handleStartAll = async () => {
@@ -278,9 +269,9 @@ const DownloadManager: React.FC = () => {
   const startAria2c = async () => {
     try {
       await invoke("start_aria2c");
-      setTimeout(async ()=>{
-        await checkConnection();    
-      },500)
+      setTimeout(async () => {
+        await checkConnection();
+      }, 500);
     } catch (err) {
       // console.error(err)
       toast.error("启动Aria2c服务失败" + ":" + err);
@@ -520,7 +511,7 @@ const DownloadManager: React.FC = () => {
                       <span className="text-[#1890FF] mr-2">•</span>
                       <span>可以在设置中调整下载相关配置</span>
                     </li>
-                       <li className="flex items-start">
+                    <li className="flex items-start">
                       <span className="text-[#1890FF] mr-2">•</span>
                       <span>更多功能敬请期待</span>
                     </li>
@@ -575,4 +566,3 @@ const DownloadManager: React.FC = () => {
 };
 
 export default DownloadManager;
-

@@ -3,7 +3,7 @@ import { DownloadManagerContext } from "@/contexts/DownloadManagerContextCore";
 import { DownloadTask, useTasks } from "@/store/storeTask";
 import { invoke } from "@tauri-apps/api/core";
 import { exists } from "@tauri-apps/plugin-fs";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 // Provider组件props类型
 interface DownloadManagerProviderProps {
@@ -33,7 +33,7 @@ export const DownloadManagerProvider: React.FC<
   };
 
   // 检查连接状态
-  const checkConnection = useCallback(async () => {
+  const checkConnection = async () => {
     try {
       const connected = await invoke<boolean>("test_aria2c_connection");
       setIsConnected(connected);
@@ -41,10 +41,10 @@ export const DownloadManagerProvider: React.FC<
       console.error("Failed to check connection:", error);
       setIsConnected(false);
     }
-  }, []);
+  };
 
   // 加载下载任务
-  const loadDownloads = useCallback(async () => {
+  const loadDownloads = async () => {
     try {
       setIsLoading(true);
       const active_downloads = await invoke<DownloadTask[]>(
@@ -78,9 +78,10 @@ export const DownloadManagerProvider: React.FC<
         if (unit) {
           if (unit.path) {
             combinedDownloads[i].path = unit.path;
-            if (combinedDownloads[i].status == "complete") {
+            if (combinedDownloads[i].status == "complete") {  
               let ex = await exists(combinedDownloads[i].path);
               if (!ex) {
+                // magnet下载成功
                 await invoke("remove_download", {
                   gid: combinedDownloads[i].gid,
                 });
@@ -106,14 +107,14 @@ export const DownloadManagerProvider: React.FC<
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   // 初始化
   useEffect(() => {
     checkConnection();
     loadDownloads();
 
-    setRefreshInterval(2000); // 默认2秒刷新一次
+    setRefreshInterval(1000); // 默认1秒刷新一次
 
     // 监听页面切换事件
     return () => {
