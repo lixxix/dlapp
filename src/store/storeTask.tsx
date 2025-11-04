@@ -1,5 +1,3 @@
-import { Api } from "@/api/api";
-import { store } from "@/lib/utils";
 import { create } from "zustand";
 export interface DownloadFile {
   index: string;
@@ -42,7 +40,6 @@ interface TaskState {
   getTaskPath: (gid: string) => string;
   setTargetStatus: (gid: string, status: string) => void;
 
-  updateStatus: () => void; // 更新状态
 }
 
 const useTasks = create<TaskState>((set, get) => ({
@@ -68,52 +65,6 @@ const useTasks = create<TaskState>((set, get) => ({
         t.gid === gid ? { ...t, status } : t
       ),
     });
-  },
-  updateStatus: async () => {
-    const tasks = get().tasks;
-    const activeTasks = tasks.filter(task => task.status === "active");
-    
-    if (activeTasks.length === 0) return;
-
-    try {
-      // 批量更新，避免多次触发状态更新
-      const updates = await Promise.all(
-        activeTasks.map(async (task) => {
-          try {
-            const taskUpdates: Partial<DownloadTask> = {};
-            
-            if (!task.path) {
-              taskUpdates.path = await Api.tellPath(task.gid);
-              if (!taskUpdates.path) {
-                store.set(task.gid, taskUpdates.path)
-              }
-            }
-
-            const status = await Api.tellStatus(task.gid, [
-              "status",
-              "downloadSpeed",
-              "uploadSpeed",
-              "completedLength",
-            ]);
-            
-            return { gid: task.gid, updates: { ...taskUpdates, ...status } };
-          } catch (error) {
-            console.error(`Failed to update task ${task.gid}:`, error);
-            return { gid: task.gid, updates: {} };
-          }
-        })
-      );
-
-      // 一次性更新所有任务
-      set({
-        tasks: get().tasks.map((t) => {
-          const update = updates.find(u => u.gid === t.gid);
-          return update && Object.keys(update.updates).length > 0 ? { ...t, ...update.updates } : t;
-        }),
-      });
-    } catch (error) {
-      console.error("Failed to update status:", error);
-    }
   },
 }));
 
