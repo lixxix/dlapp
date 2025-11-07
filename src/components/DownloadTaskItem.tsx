@@ -47,7 +47,7 @@ const DownloadTaskItem: React.FC<DownloadTaskItemProps> = memo(
 
     const handleRemove = async () => {
       onRemove(task.gid);
-      if (task.status != "complete") {
+      if (task.status != "complete" && task.status != "error") {
         try {
           await remove(task.dir + "/" + display, {recursive:true})
         } catch(err) {
